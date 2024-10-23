@@ -9,7 +9,7 @@ from sklearn.metrics import accuracy_score
 st.set_page_config(page_title="Project", page_icon="🛠️")
 
 # Judul Aplikasi
-st.title("Faktor Yang Mempengaruhi Tingkat Keberhasilan Customer Membeli Rumah")
+st.title("Faktor Yang Mempengaruhi Keberhasilan Akad Kredit Di Seluruh Proyek")
 
 # Upload file CSV
 uploaded_file = st.file_uploader("Unggah file CSV", type=["csv"])
@@ -205,12 +205,52 @@ if uploaded_file is not None:
 
         # Visualisasi jumlah setiap nilai untuk variabel
         st.subheader("Jumlah Setiap Nilai untuk Variabel")
+
+        # Keterangan khusus untuk setiap variabel
+        keterangan = {
+            'Jenis Kelamin': "Diagram ini menunjukkan distribusi jenis kelamin customer yang tertarik membeli rumah.",
+            'Sumber Informasi': "Diagram ini menunjukkan sumber informasi yang digunakan oleh customer untuk mengetahui tentang lokasi dan bentuk perumahan yang dijual.",
+            'Status Pernikahan': "Diagram ini menunjukkan status pernikahan customer dan bagaimana hal ini mempengaruhi tingkat Keberhasilan Customer dalam melakukan pembelian rumah.",
+            'Pekerjaan': "Diagram ini menunjukkan distribusi pekerjaan customer yang tertarik membeli rumah.",
+            'Pendapatan Customer': "Diagram ini menunjukkan distribusi pendapatan customer yang bisa mempengaruhi kemampuan mereka untuk membeli rumah.",
+            'Dana Yang Tersedia': "Diagram ini menunjukkan dana yang siap dikeluarkan oleh customer untuk membeli rumah."
+        }
+
+        # Keterangan tambahan yang berbeda untuk masing-masing diagram
+        keterangan_tambahan = {
+            'Jenis Kelamin': {
+                'positif': "Dari diagram diatas dapat dilihat bahwa Jenis Kelamin menjadi salah satu faktor yang mempengaruhi tingkat keberhasilan customer dalam membeli rumah.",
+                'negatif': "Dari diagram diatas dapat dilihat bahwa Jenis Kelamin tidak terlalu berpengaruh terhadap tingkat keberhasilan customer dalam membeli rumah."
+            },
+            'Sumber Informasi': {
+                'positif': "Dari diagram diatas dapat dilihat bahwa Sumber Informasi menjadi salah satu faktor yang mempengaruhi tingkat keberhasilan customer dalam membeli rumah.",
+                'negatif': "Dari diagram diatas dapat dilihat bahwa Sumber Informasi tidak memiliki pengaruh terhadap tingkat keberhasilan customer dalam membeli rumah."
+            },
+            'Status Pernikahan': {
+                'positif': "Dari diagram diatas dapat dilihat bahwa Status Pernikahan memiliki pengaruh yang signifikan terhadap tingkat keberhasilan customer dalam membeli rumah",
+                'negatif': "Dari diagram diatas dapat dilihat bahwa sudah menikah atau belumnya customer tidak mempengaruhi apakah mereka berhasil membeli rumah atau tidak. ."
+            },
+            'Pekerjaan': {
+                'positif': "Dari diagram diatas dapat dilihat bahwa mata pencaharian customer merupakan faktor yang mempengaruhi tingkat keberhasilan customer dalam membeli rumah.",
+                'negatif': "Dari diagram diatas dapat dilihat bahwa mata pencaharian customer di daerah ini tidak menjadi faktor utam yang mempengaruhi tingkat keberhasilan customer dalam membeli rumah."
+            },
+            'Pendapatan Customer': {
+                'positif': "Dari diagram diatas dapat dilihat bahwa Pendapatan customer menjadi faktor penting yang mempengaruhi apakah customer tersebut membeli rumah atau tidak.",
+                'negatif': "Dari diagram diatas dapat dilihat bahwa Nominal Pendapatan tidak menjadi faktor yang berpengaruh terhadap tingkat keberhasilan customer dalam membeli rumah di daerah ini."
+            },
+            'Dana Yang Tersedia': {
+                'positif': "Dari diagram diatas dapat dilihat bahwa Dana yang Tersedia/Dana yang siap dikeluarkan oleh customer menjadi faktor penting yang mempengaruhi tingkat keberhasilan customer dalam membeli rumah.",
+                'negatif': "Dari diagram, kita bisa lihat bahwa banyaknya uang yang siap dikeluarkan oleh customer tidak menentukan apakah mereka jadi membeli rumah atau tidak di daerah ini ."
+            }
+        }
+
         for var in variabel_kategorik + ['Pendapatan Customer', 'Dana Yang Tersedia']:
             if var in variabel_kategorik:
                 # Gunakan label encoder untuk mendapatkan original categories
                 original_values = label_encoders[var].classes_
                 zein_filtered[var] = zein_filtered[var].apply(lambda x: original_values[x])
-    
+
+            # Tentukan warna berdasarkan koefisien
             color = 'steelblue' if var in df_positif['Fitur'].values else 'salmon'  # Warna sesuai koefisien
             chart = alt.Chart(zein_filtered).mark_bar(color=color).encode(
                 x=alt.X('count():Q', title='Jumlah'),
@@ -219,7 +259,7 @@ if uploaded_file is not None:
             ).properties(
                 title=f'Jumlah Setiap Nilai untuk Variabel {var}'
             )
-        
+
             # Menambahkan label jumlah di atas setiap batang
             label = chart.mark_text(
                 align='left',
@@ -229,10 +269,35 @@ if uploaded_file is not None:
             ).encode(
                 text=alt.Text('count():Q', format='.0f')  # Menampilkan jumlah sebagai label
             )
-        
+
             # Gabungkan chart batang dengan label
             st.altair_chart(chart + label, use_container_width=True)
 
+            # Hitung nilai tertinggi untuk setiap variabel
+            highest_value = zein_filtered[var].value_counts().idxmax()
+            highest_count = zein_filtered[var].value_counts().max()
+
+            # Tambahkan keterangan di bawah setiap diagram dengan membedakan keterangan positif dan negatif
+            if var in df_positif['Fitur'].values:
+                keterangan_tambahan_var = keterangan_tambahan[var]['positif']
+                st.write(
+                    f"{keterangan[var]} {keterangan_tambahan_var} Dan dominan {var} customer yang tertarik membeli rumah adalah  '{highest_value}' dengan jumlah {highest_count} Customer."
+                )
+            else:
+                keterangan_tambahan_var = keterangan_tambahan[var]['negatif']
+                st.write(
+                    f"{keterangan[var]} {keterangan_tambahan_var}"
+                )
+
+            # Tambahkan jarak antar diagram
+            st.write("")  # Menambahkan satu baris kosong
+            st.write("")  # Menambahkan baris kosong kedua untuk jarak lebih
+
+
+
+
+
+         
 
 
    
